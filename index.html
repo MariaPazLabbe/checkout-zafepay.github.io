@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zafepay — Propuesta de checkout mobile</title>
+<style>
+  :root{
+    --indigo:#4653E3;
+    --indigo-dark:#3846C4;
+    --indigo-tint:#EEF0FD;
+    --indigo-tint-2:#E3E6FB;
+    --navy:#090D36;
+    --bg:#F3F4FA;
+    --card:#FFFFFF;
+    --border:#E4E6F0;
+    --text-primary:#0E1130;
+    --text-secondary:#666B8C;
+    --text-muted:#9498B3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#DEE0EC;
+    color:var(--text-primary);
+    padding:32px 0;
+  }
+  .phone{
+    width:390px;
+    margin:0 auto;
+    background:var(--bg);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 0 0 8px #0E1130;
+  }
+  .screen{
+    max-height:820px;
+    overflow-y:auto;
+  }
+  header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:22px 18px;
+    background:var(--indigo-tint);
+  }
+  .brand-mark{
+    height:56px;width:auto;max-width:220px;
+    border-radius:10px;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    padding:6px 16px;
+  }
+  .brand-mark .placeholder{font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:0.03em;}
+
+  .summary-bar{
+    display:block;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+  }
+  .summary-bar summary{
+    list-style:none;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 18px;
+    cursor:pointer;
+  }
+  .summary-bar summary::-webkit-details-marker{display:none;}
+  .summary-toggle{
+    display:flex;align-items:center;gap:6px;
+    font-size:13px;font-weight:600;color:var(--text-primary);
+  }
+  .summary-toggle .chev{
+    font-size:11px;color:var(--text-muted);
+    transition:transform .15s ease;
+  }
+  details[open] > summary .chev{transform:rotate(180deg);}
+  .summary-total{font-size:14.5px;font-weight:700;color:var(--navy);}
+
+  .summary-body{
+    padding:4px 18px 16px;
+    background:#fff;
+  }
+  .product{
+    display:flex;gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .product:last-of-type{border-bottom:none;}
+  .thumb{
+    width:44px;height:44px;border-radius:8px;
+    background:var(--indigo-tint);
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-muted);font-size:9px;
+  }
+  .product-info{flex:1;min-width:0;}
+  .product-info p{margin:0;}
+  .product-name{font-size:12.5px;color:var(--text-primary);}
+  .product-name b{font-weight:600;}
+  .product-meta{font-size:11px;color:var(--text-muted);margin-top:2px !important;}
+  .product-qty-row{margin-top:6px !important;}
+  .qty-select{
+    height:26px;padding:0 6px;font-size:11.5px;
+    border-radius:6px;border:1px solid var(--border);
+    background:#fff;
+  }
+  .product-right{
+    display:flex;flex-direction:column;align-items:flex-end;
+    gap:5px;flex-shrink:0;
+  }
+  .product-price{font-size:12.5px;font-weight:600;white-space:nowrap;text-align:right;}
+  .product-price .old-row{display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+  .product-price .old{
+    font-weight:400;color:var(--text-muted);
+    text-decoration:line-through;font-size:10.5px;
+  }
+  .discount-tag{
+    font-size:9.5px;font-weight:600;color:#1D9E75;background:#E1F5EE;
+    padding:1px 5px;border-radius:5px;
+  }
+  .remove-btn{width:16px;height:16px;border:none;background:none;color:var(--text-muted);padding:0;}
+
+  .discount-row{display:flex;gap:6px;margin:12px 0;}
+  .discount-row input{flex:1;height:34px;font-size:12.5px;}
+  .btn-apply{
+    height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg);font-size:12px;font-weight:600;color:var(--text-secondary);
+  }
+
+  .totals{background:var(--bg);border-radius:10px;padding:10px 12px;}
+  .totals-row{
+    display:flex;justify-content:space-between;
+    font-size:12.5px;color:var(--text-secondary);padding:3px 0;
+  }
+  .totals-row.total{
+    font-size:14.5px;font-weight:700;color:var(--navy);
+    border-top:1px solid var(--border);margin-top:4px;padding-top:8px;
+  }
+  .totals-row.total span:last-child{color:var(--indigo);}
+  .totals-row.discount span:last-child{color:#1D9E75;font-weight:600;}
+
+  main{padding:18px;}
+  .form-intro{font-size:12.5px;color:var(--text-secondary);margin:0 0 14px;}
+  .form-intro b{color:var(--navy);font-weight:600;}
+
+  .section{margin-bottom:14px;background:#fff;border-radius:12px;padding:16px;}
+  .section-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+  .section-head .icon{
+    width:22px;height:22px;border-radius:6px;background:var(--indigo-tint);
+    display:flex;align-items:center;justify-content:center;color:var(--indigo);
+  }
+  .section-head p{margin:0;font-size:12.5px;font-weight:600;color:var(--navy);}
+  .field{margin-bottom:9px;}
+  .field:last-child{margin-bottom:0;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;}
+  input, select{
+    width:100%;height:36px;border:1px solid var(--border);border-radius:8px;
+    padding:0 11px;font-size:12.5px;background:#fff;color:var(--text-primary);outline:none;
+  }
+  input::placeholder{color:var(--text-muted);}
+  input:focus, select:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(70,83,227,0.12);}
+
+  .pay-methods{display:flex;flex-direction:column;gap:8px;}
+  .pay-option{
+    display:flex;align-items:center;gap:10px;
+    border:1px solid var(--border);border-radius:10px;
+    padding:11px 12px;
+  }
+  .pay-option.selected{border-color:var(--indigo);background:var(--indigo-tint);}
+  .pay-option input{width:auto;height:auto;}
+  .pay-option .pm-icon{
+    width:26px;height:26px;border-radius:6px;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;color:var(--indigo);flex-shrink:0;
+  }
+  .pay-option p{margin:0;font-size:12.5px;font-weight:500;color:var(--text-primary);}
+
+  .shipping-note{
+    display:flex;align-items:center;gap:6px;
+    background:var(--indigo-tint);border-radius:8px;
+    padding:8px 10px;margin:-2px 0 9px;
+  }
+  .shipping-note svg{color:var(--indigo);flex-shrink:0;}
+  .shipping-note p{margin:0;font-size:11.5px;color:var(--indigo-dark);}
+  .shipping-note b{font-weight:600;}
+
+  .secure-pay{
+    display:flex;align-items:flex-start;gap:8px;
+    background:var(--bg);border-radius:8px;
+    padding:10px 11px;margin-top:12px;
+  }
+  .secure-pay svg{color:var(--indigo);flex-shrink:0;margin-top:1px;}
+  .secure-pay p{margin:0;font-size:11px;color:var(--text-secondary);line-height:1.4;}
+  .secure-pay b{color:var(--navy);font-weight:600;}
+
+  .donation-copy{font-size:11.5px;color:var(--text-secondary);margin:0 0 12px;}
+  .donation-check{
+    display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;
+  }
+  .donation-check input{width:auto;height:auto;margin-top:2px;}
+  .donation-check p{margin:0;font-size:12px;color:var(--text-primary);line-height:1.4;}
+  .donation-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;
+  }
+  .donation-opt{
+    border:1px solid var(--border);border-radius:8px;
+    padding:8px 4px;text-align:center;cursor:pointer;
+  }
+  .donation-opt.selected{border-color:var(--indigo);background:var(--indigo-tint);}
+  .donation-opt .pct{font-size:11.5px;font-weight:600;color:var(--text-primary);}
+  .donation-opt .amt{font-size:9.5px;color:var(--text-muted);margin-top:2px;}
+  .donation-custom{
+    display:flex;align-items:center;justify-content:space-between;
+    border:1px solid var(--border);border-radius:8px;
+    padding:8px 10px;margin-bottom:10px;
+  }
+  .donation-custom span{font-size:11.5px;color:var(--text-secondary);}
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stepper button{
+    width:22px;height:22px;border-radius:6px;border:1px solid var(--border);
+    background:var(--bg);font-size:13px;color:var(--text-primary);
+  }
+  .stepper span{font-size:12px;font-weight:600;min-width:20px;text-align:center;}
+  .btn-donate{
+    width:100%;height:36px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg);font-size:12px;font-weight:600;color:var(--text-secondary);
+  }
+  .donation-thanks{font-size:11px;color:var(--text-muted);margin:8px 0 0;}
+
+  .bottom-bar{
+    background:#fff;border-top:1px solid var(--border);
+    padding:6px 18px 16px;
+  }
+  .add-discount{
+    display:flex;align-items:center;gap:6px;
+    padding:10px 0;border-bottom:1px solid var(--border);
+    font-size:12.5px;font-weight:600;color:var(--indigo-dark);cursor:pointer;
+  }
+  .add-discount svg{flex-shrink:0;}
+
+  .total-toggle{border-bottom:1px solid var(--border);}
+  .total-toggle summary{
+    list-style:none;display:flex;align-items:center;justify-content:space-between;
+    padding:12px 0;cursor:pointer;
+  }
+  .total-toggle summary::-webkit-details-marker{display:none;}
+  .total-toggle .tt-label{font-size:12px;color:var(--text-secondary);}
+  .total-toggle .tt-label b{display:block;font-size:14.5px;color:var(--navy);font-weight:700;}
+  .total-toggle .chev{font-size:11px;color:var(--text-muted);transition:transform .15s ease;}
+  .total-toggle[open] summary .chev{transform:rotate(180deg);}
+  .total-toggle .totals{margin-bottom:10px;}
+
+  .sub-reminder{
+    display:flex;align-items:center;gap:6px;justify-content:center;
+    font-size:11px;font-weight:600;color:var(--indigo-dark);
+    padding:10px 0 2px;
+  }
+  .sub-reminder svg{flex-shrink:0;}
+
+  .cta{
+    width:100%;height:46px;border:none;border-radius:10px;
+    background:var(--indigo);color:#fff;font-size:14px;font-weight:600;
+    margin-top:12px;
+  }
+  .trust{
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    margin-top:9px;font-size:10px;color:var(--text-muted);
+  }
+  .trust b{color:var(--indigo);font-weight:600;}
+
+  .upsell{padding:18px;}
+  .upsell-title{
+    display:flex;align-items:center;gap:7px;
+    font-size:12.5px;font-weight:600;color:var(--navy);
+    margin-bottom:12px;
+  }
+  .upsell-title svg{color:var(--indigo);flex-shrink:0;}
+  .upsell-item{
+    display:flex;align-items:center;gap:10px;
+    background:#fff;border-radius:12px;
+    padding:10px;margin-bottom:8px;
+  }
+  .upsell-item:last-child{margin-bottom:0;}
+  .upsell-info{flex:1;min-width:0;}
+  .upsell-name{
+    margin:0 0 4px;font-size:12px;color:var(--text-primary);
+    line-height:1.3;
+  }
+  .upsell-price{font-size:12.5px;font-weight:600;color:var(--text-primary);}
+  .upsell-price .old{
+    font-weight:400;color:var(--text-muted);
+    text-decoration:line-through;font-size:11px;margin-right:5px;
+  }
+  .btn-add{
+    flex-shrink:0;height:32px;padding:0 14px;border-radius:8px;
+    border:none;background:var(--indigo);color:#fff;
+    font-size:12px;font-weight:600;
+  }
+
+  .sub-banner{
+    display:flex;gap:10px;align-items:flex-start;
+    background:var(--indigo-tint);border-radius:12px;
+    padding:14px;margin:16px 18px 12px;
+  }
+  .sub-banner .ic{
+    width:30px;height:30px;border-radius:8px;background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--indigo);
+    flex-shrink:0;
+  }
+  .sub-banner p{margin:0;}
+  .sub-banner .t{font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+  .sub-banner .d{font-size:11px;color:var(--indigo-dark);line-height:1.4;}
+
+  .sub-savings{
+    display:inline-flex;align-items:center;gap:5px;
+    background:#FAEEDA;color:#854F0B;
+    font-size:10.5px;font-weight:600;
+    padding:3px 8px;border-radius:6px;margin:4px 0 0;
+  }
+
+  .freq-card{
+    background:#fff;border-radius:12px;
+    margin:14px 18px 12px;padding:14px;
+  }
+  .freq-label{font-size:12.5px;font-weight:600;color:var(--navy);margin:0 0 2px;}
+  .freq-sub{font-size:11px;color:var(--text-muted);margin:0 0 10px;}
+  .freq-select{
+    width:100%;height:38px;border:1px solid var(--border);border-radius:8px;
+    padding:0 11px;font-size:12.5px;font-weight:600;color:var(--indigo-dark);
+    background:var(--indigo-tint);margin-bottom:10px;
+  }
+
+  .next-ship{
+    display:flex;gap:8px;align-items:flex-start;
+    background:var(--bg);border-radius:8px;padding:10px 11px;
+  }
+  .next-ship svg{color:var(--indigo);flex-shrink:0;margin-top:1px;}
+  .next-ship p{margin:0;font-size:11px;color:var(--text-secondary);line-height:1.4;}
+  .next-ship b{color:var(--navy);font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+<div class="screen">
+
+  <header>
+    <div class="brand-mark"><span class="placeholder">LOGO</span></div>
+  </header>
+
+  <details class="summary-bar">
+    <summary>
+      <div class="summary-toggle">
+        Resumen del pedido <span class="chev">&#9660;</span>
+      </div>
+      <div style="text-align:right;">
+        <div class="summary-total">$92.521</div>
+        <div style="font-size:10px;color:var(--indigo-dark);font-weight:600;">Suscripción · cada 1 mes</div>
+      </div>
+    </summary>
+    <div class="summary-body">
+
+      <div class="product">
+        <div class="thumb">IMG</div>
+        <div class="product-info">
+          <p class="product-name"><b>Brit Care Adult Large Breed Lamb</b></p>
+          <p class="product-meta">12 kg</p>
+          <div class="product-qty-row">
+            <select class="qty-select">
+              <option>1</option><option>2</option><option>3</option>
+            </select>
+          </div>
+          <div class="sub-savings">Ahorras $3.249 · 5% dcto. por suscripción</div>
+        </div>
+        <div class="product-right">
+          <button class="remove-btn" aria-label="Eliminar producto">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="product-price">
+            <div class="old-row">
+              <span class="old">$64.990</span>
+              <span class="discount-tag">-5%</span>
+            </div>
+            $61.741
+          </div>
+        </div>
+      </div>
+
+      <div class="product">
+        <div class="thumb">IMG</div>
+        <div class="product-info">
+          <p class="product-name"><b>Easy Clean Lavanda</b></p>
+          <p class="product-meta">20 kg</p>
+          <div class="product-qty-row">
+            <select class="qty-select">
+              <option>1</option><option selected>2</option><option>3</option>
+            </select>
+          </div>
+        </div>
+        <div class="product-right">
+          <button class="remove-btn" aria-label="Eliminar producto">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="product-price">$27.580</div>
+        </div>
+      </div>
+
+      <div class="discount-row">
+        <input type="text" placeholder="Agregar otro código de descuento" />
+        <button class="btn-apply">Aplicar</button>
+      </div>
+
+      <div class="totals">
+        <div class="totals-row"><span>Subtotal</span><span>$92.570</span></div>
+        <div class="totals-row discount"><span>Descuento (PET10)</span><span>-$3.249</span></div>
+        <div class="totals-row"><span>Envío</span><span>$3.200</span></div>
+        <div class="totals-row total"><span>Total</span><span>$92.521</span></div>
+      </div>
+    </div>
+  </details>
+
+  <div class="sub-banner">
+    <div class="ic">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+    </div>
+    <p>
+      <span class="t">Compra por suscripción</span>
+      <span class="d">Recibirás este pedido según la frecuencia que elijas — sin preocuparte de quedarte sin stock.</span>
+    </p>
+  </div>
+
+  <div class="freq-card">
+    <p class="freq-label">¿Cada cuánto quieres recibir tu pedido?</p>
+    <p class="freq-sub">Puedes cambiarlo cuando quieras desde tu portal.</p>
+    <select class="freq-select">
+      <option>Cada 2 semanas</option>
+      <option selected>Cada 1 mes</option>
+      <option>Cada 2 meses</option>
+      <option>Cada 3 meses</option>
+    </select>
+
+    <div class="next-ship">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+      <p><b>Próximo envío estimado: 7 de septiembre.</b><br>Luego se repetirá automáticamente cada mes.</p>
+    </div>
+  </div>
+
+  <main>
+
+    <p class="form-intro"><b>Completa tus datos</b> y elige tu medio de pago para finalizar la compra.</p>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6 12 13 2 6"/></svg>
+        </div>
+        <p>Contacto</p>
+      </div>
+      <div class="row2">
+        <input type="text" placeholder="Nombre" />
+        <input type="text" placeholder="Apellidos" />
+      </div>
+      <div class="field"><input type="text" placeholder="Correo electrónico" /></div>
+      <div class="field" style="margin-bottom:0;"><input type="text" placeholder="Teléfono" /></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <p>Entrega</p>
+      </div>
+      <div class="field"><input type="text" value="Av. Providencia 1234, depto 402" /></div>
+
+      <div class="shipping-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h3l3 3v4h-6z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>
+        <p>Costo de envío calculado para esta dirección: <b>$3.200</b></p>
+      </div>
+
+      <div class="row2">
+        <input type="text" placeholder="Depto / casa (opcional)" />
+        <input type="text" placeholder="Comuna" />
+      </div>
+      <div class="row2" style="margin-bottom:0;">
+        <input type="text" placeholder="Región" />
+        <input type="text" placeholder="Cód. postal (opcional)" />
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        </div>
+        <p>Pago</p>
+      </div>
+      <div class="pay-methods">
+        <label class="pay-option selected">
+          <input type="radio" name="pay" checked />
+          <div class="pm-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+          <p>Tarjeta de crédito o débito</p>
+        </label>
+        <label class="pay-option">
+          <input type="radio" name="pay" />
+          <div class="pm-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 6V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h1"/></svg>
+          </div>
+          <p>Prepago</p>
+        </label>
+        <label class="pay-option">
+          <input type="radio" name="pay" />
+          <div class="pm-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M7 15h.01M11 15h4"/><rect x="3" y="6" width="18" height="12" rx="2"/></svg>
+          </div>
+          <p>Transferencia bancaria</p>
+        </label>
+      </div>
+
+      <div class="secure-pay">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <p><b>Pago 100% seguro</b> — tus datos viajan encriptados y son procesados por zafepay, no quedan almacenados en [marca del cliente].</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-9.5-8.5C.87 9.42 2 6 5.5 6c1.9 0 3.2 1 4.5 2.5C11.3 7 12.6 6 14.5 6 18 6 19.13 9.42 21.5 12.5 19 16.65 12 21 12 21Z"/></svg>
+        </div>
+        <p>Donación a fundaciones</p>
+      </div>
+      <p class="donation-copy">Da una muestra de apoyo a las fundaciones de [marca del cliente].</p>
+
+      <div class="donation-check">
+        <input type="checkbox" checked />
+        <p>Quiero sumar una donación a mi compra.</p>
+      </div>
+
+      <div class="donation-grid">
+        <div class="donation-opt">
+          <div class="pct">5%</div>
+          <div class="amt">$4.466</div>
+        </div>
+        <div class="donation-opt selected">
+          <div class="pct">10%</div>
+          <div class="amt">$8.932</div>
+        </div>
+        <div class="donation-opt">
+          <div class="pct">20%</div>
+          <div class="amt">$17.864</div>
+        </div>
+        <div class="donation-opt">
+          <div class="pct">Ninguno</div>
+          <div class="amt">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="donation-custom">
+        <span>Donación personalizada</span>
+        <div class="stepper">
+          <button aria-label="Restar">–</button>
+          <span>$0</span>
+          <button aria-label="Sumar">+</button>
+        </div>
+      </div>
+
+      <button class="btn-donate">Agregar donación</button>
+      <p class="donation-thanks">Muchas gracias.</p>
+    </div>
+
+  </main>
+
+  <div class="bottom-bar">
+
+    <div class="add-discount">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Agregar descuento
+    </div>
+
+    <details class="total-toggle">
+      <summary>
+        <div class="tt-label">
+          Total · 2 artículos
+          <b>$92.521</b>
+        </div>
+        <span class="chev">&#9660;</span>
+      </summary>
+
+      <div class="product">
+        <div class="thumb">IMG</div>
+        <div class="product-info">
+          <p class="product-name"><b>Brit Care Adult Large Breed Lamb</b></p>
+          <p class="product-meta">12 kg · x1</p>
+        </div>
+        <div class="product-right">
+          <div class="product-price">
+            <div class="old-row">
+              <span class="old">$64.990</span>
+              <span class="discount-tag">-5%</span>
+            </div>
+            $61.741
+          </div>
+        </div>
+      </div>
+
+      <div class="product">
+        <div class="thumb">IMG</div>
+        <div class="product-info">
+          <p class="product-name"><b>Easy Clean Lavanda</b></p>
+          <p class="product-meta">20 kg · x2</p>
+        </div>
+        <div class="product-right">
+          <div class="product-price">$27.580</div>
+        </div>
+      </div>
+
+      <div class="totals">
+        <div class="totals-row"><span>Subtotal</span><span>$92.570</span></div>
+        <div class="totals-row discount"><span>Descuento (PET10)</span><span>-$3.249</span></div>
+        <div class="totals-row"><span>Envío</span><span>$3.200</span></div>
+        <div class="totals-row total"><span>Total</span><span>$92.521</span></div>
+      </div>
+    </details>
+
+    <div class="sub-reminder">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+      Suscripción · se renovará automáticamente cada 1 mes
+    </div>
+
+    <button class="cta">Pagar ahora</button>
+    <div class="trust">
+      <span>Pagos procesados de forma segura por</span><b>zafepay</b>
+    </div>
+  </div>
+
+  <div class="upsell">
+    <div class="upsell-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+      Ya que estás aquí, esto les encantará
+    </div>
+
+    <div class="upsell-item">
+      <div class="thumb">IMG</div>
+      <div class="upsell-info">
+        <p class="upsell-name">Dingo Large Bone 90 g <span class="discount-tag">-15%</span></p>
+        <div class="upsell-price">
+          <span class="old">$5.490</span>
+          $4.690
+        </div>
+      </div>
+      <button class="btn-add">Añadir</button>
+    </div>
+
+    <div class="upsell-item">
+      <div class="thumb">IMG</div>
+      <div class="upsell-info">
+        <p class="upsell-name">Snack Fit Huesito 20 un. <span class="discount-tag">-21%</span></p>
+        <div class="upsell-price">
+          <span class="old">$11.990</span>
+          $9.490
+        </div>
+      </div>
+      <button class="btn-add">Añadir</button>
+    </div>
+
+    <div class="upsell-item">
+      <div class="thumb">IMG</div>
+      <div class="upsell-info">
+        <p class="upsell-name">Lata Fit Fórmula Perro Carne 280 g <span class="discount-tag">-27%</span></p>
+        <div class="upsell-price">
+          <span class="old">$2.990</span>
+          $2.190
+        </div>
+      </div>
+      <button class="btn-add">Añadir</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
